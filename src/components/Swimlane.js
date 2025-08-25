@@ -1,54 +1,57 @@
 import { useDroppable } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import TaskCard from './TaskCard';
 
-const Swimlane = ({ id, title, tasks, count }) => {
+const Swimlane = ({ id, title, tasks, isValidDropTarget = true, activeTaskStatus = null }) => {
   const { setNodeRef, isOver } = useDroppable({ id });
+  
+  // Debug logging
+  if (isOver) {
+    console.log(`🎯 Hovering over swimlane: ${id}`, { isValidDropTarget, activeTaskStatus });
+  }
 
-  const statusColors = {
-    todo: 'bg-gray-50 border-gray-200',
-    'in-progress': 'bg-blue-50 border-blue-200',
-    review: 'bg-yellow-50 border-yellow-200',
-    done: 'bg-green-50 border-green-200',
+  // Determine drop zone styling based on validity
+  const getDropZoneStyle = () => {
+    if (!isOver) return 'bg-[#F4F5F6]';
+    
+    if (isValidDropTarget) {
+      return 'bg-green-50 border-2 border-green-300 border-dashed';
+    } else {
+      return 'bg-red-50 border-2 border-red-300 border-dashed';
+    }
   };
 
-  const headerColors = {
-    todo: 'text-gray-700',
-    'in-progress': 'text-blue-700',
-    review: 'text-yellow-700',
-    done: 'text-green-700',
+  const titleMap = {
+    todo: 'TO DO',
+    'in-progress': 'IN PROGRESS', 
+    review: 'REVIEW',
+    done: 'DONE',
   };
 
   return (
-    <div className="flex-1 min-w-80">
-      <div className={`rounded-lg border-2 ${statusColors[id]} ${isOver ? 'border-blue-400 bg-blue-50' : ''} transition-colors`}>
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h2 className={`font-semibold text-sm ${headerColors[id]}`}>
-              {title}
-            </h2>
-            <span className="bg-white px-2 py-1 rounded-full text-xs font-medium text-gray-600 border">
-              {count}
-            </span>
+    <div className="h-full">
+      {/* Column Header */}
+      <div className="bg-white border-b border-[#E6E8EC] px-6 py-4">
+        <h2 className="text-sm font-semibold text-[#353945] tracking-wide">
+          {titleMap[id] || title}
+        </h2>
+      </div>
+      
+      {/* Tasks Area */}
+      <div
+        ref={setNodeRef}
+        className={`p-6 min-h-screen ${getDropZoneStyle()} transition-all duration-200`}
+      >
+        {tasks.length === 0 ? (
+          <div className="text-center text-[#B1B5C4] text-sm py-12">
+            No tasks
           </div>
-        </div>
-        
-        <div
-          ref={setNodeRef}
-          className="p-4 min-h-96 max-h-screen overflow-y-auto"
-        >
-          <SortableContext items={tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
-            {tasks.length === 0 ? (
-              <div className="text-center text-gray-400 text-sm py-8">
-                No tasks
-              </div>
-            ) : (
-              tasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
-              ))
-            )}
-          </SortableContext>
-        </div>
+        ) : (
+          <div className="space-y-4">
+            {tasks.map((task) => (
+              <TaskCard key={`${task.id}-${task.status}`} task={task} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
