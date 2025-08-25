@@ -1,0 +1,27 @@
+UI Implementation
+ Recreate the swimlane dashboard based on the provided mockup (Figma design
+is provided [Dashboard.svg]) using Next.js.
+ Ensure the layout is pixel-perfect, responsive (at least upto 768px) and cross-
+browser compatible.
+ Implement styles using TailwindCSS.
+
+Swimlane Features
+Display tasks in swimlanes based on their status.
+
+Drag-and-Drop Functionality
+Implement drag-and-drop functionality to allow tasks to be moved between swimlanes.
+
+State Management
+Use Zustand for managing task data.
+Ensure tasks update their status property when moved between swimlanes.
+
+Prepopulate data
+Task data should be fetched via a json file acting as a mock API.
+
+Data Persistence
+Store task data in localStorage or sessionStorage so that updates persist across page
+reloads.
+
+Search Task
+As the user types in the search bar, the tasks in the swimlanes should update
+dynamically to only show tasks that match the search query.
