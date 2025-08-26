@@ -13,9 +13,10 @@ import {
 
 import useTaskStore from '@/store/taskStore';
 import Swimlane from './Swimlane';
-import SearchBar from './SearchBar';
 import Sidebar from './Sidebar';
 import TaskCard from './TaskCard';
+import Navbar from './Navbar';
+import BoardHeader from './BoardHeader';
 
 const Dashboard = () => {
   const { 
@@ -27,7 +28,7 @@ const Dashboard = () => {
   const [activeTask, setActiveTask] = useState(null);
 
   // Define the status flow order - tasks can only move to adjacent states
-  const statusFlow = ['todo', 'in-progress', 'review', 'done'];
+  const statusFlow = ['reject', 'todo', 'in-progress', 'review', 'done'];
   
   // Helper function to check if a move is valid (only to adjacent states)
   const isValidMove = (currentStatus, targetStatus) => {
@@ -63,6 +64,7 @@ const Dashboard = () => {
 
     // Organize by status
     return {
+      reject: filteredTasks.filter(task => task.status === 'reject'),
       todo: filteredTasks.filter(task => task.status === 'todo'),
       'in-progress': filteredTasks.filter(task => task.status === 'in-progress'),
       review: filteredTasks.filter(task => task.status === 'review'),
@@ -102,7 +104,7 @@ const Dashboard = () => {
     console.log('🎯 Drop target:', overId);
 
     // If dropped on a swimlane, check if it's a valid move
-    if (['todo', 'in-progress', 'review', 'done'].includes(overId)) {
+    if (['reject', 'todo', 'in-progress', 'review', 'done'].includes(overId)) {
       if (draggedTask.status !== overId) {
         // Check if the move is to an adjacent state only
         if (isValidMove(draggedTask.status, overId)) {
@@ -134,6 +136,7 @@ const Dashboard = () => {
   };
 
   const swimlanes = [
+    { id: 'reject', title: 'Reject', tasks: tasksByStatus.reject },
     { id: 'todo', title: 'To Do', tasks: tasksByStatus.todo },
     { id: 'in-progress', title: 'In Progress', tasks: tasksByStatus['in-progress'] },
     { id: 'review', title: 'Review', tasks: tasksByStatus.review },
@@ -141,60 +144,45 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white flex">
-      {/* Sidebar */}
-      <Sidebar />
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Top Navbar */}
+      <Navbar />
       
-      {/* Main Content Area */}
-      <div className="flex-1">
-        {/* Header with TO DO button */}
-        <div className="bg-white border-b border-[#E6E8EC] px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button className="bg-[#E6E8EC] text-[#353945] px-6 py-2 rounded-full text-sm font-medium">
-                TO DO
-              </button>
-              <button className="text-[#353945] p-2 hover:bg-gray-100 rounded">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
-              </button>
-              <button className="text-[#353945] p-2 hover:bg-gray-100 rounded">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-                </svg>
-              </button>
-            </div>
-            <div className="w-80">
-              <SearchBar />
-            </div>
-          </div>
-        </div>
+      {/* Main Layout */}
+      <div className="flex flex-1">
+        {/* Sidebar */}
+        <Sidebar />
+        
+        {/* Main Content Area */}
+        <div className="flex-1">
+          {/* Board Header with TO DO button and search */}
+          <BoardHeader />
 
-        {/* Main Board */}
-        <div className="bg-[#F4F5F6] min-h-screen">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="grid grid-cols-4 divide-x divide-[#E6E8EC]">
-              {swimlanes.map((swimlane) => (
-                <Swimlane
-                  key={`${swimlane.id}-${swimlane.tasks.length}-${swimlane.tasks.map(t => t.id).join(',')}`}
-                  id={swimlane.id}
-                  title={swimlane.title}
-                  tasks={swimlane.tasks}
-                  isValidDropTarget={isValidDropTarget(swimlane.id)}
-                  activeTaskStatus={activeTask?.status}
-                />
-              ))}
-            </div>
-            <DragOverlay>
-              {activeTask ? <TaskCard task={activeTask} /> : null}
-            </DragOverlay>
-          </DndContext>
+          {/* Main Board */}
+          <div className="bg-[#F4F5F6] min-h-screen">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <div className="grid grid-cols-5 divide-x divide-[#E6E8EC]">
+                {swimlanes.map((swimlane) => (
+                  <Swimlane
+                    key={`${swimlane.id}-${swimlane.tasks.length}-${swimlane.tasks.map(t => t.id).join(',')}`}
+                    id={swimlane.id}
+                    title={swimlane.title}
+                    tasks={swimlane.tasks}
+                    isValidDropTarget={isValidDropTarget(swimlane.id)}
+                    activeTaskStatus={activeTask?.status}
+                  />
+                ))}
+              </div>
+              <DragOverlay>
+                {activeTask ? <TaskCard task={activeTask} /> : null}
+              </DragOverlay>
+            </DndContext>
+          </div>
         </div>
       </div>
     </div>
